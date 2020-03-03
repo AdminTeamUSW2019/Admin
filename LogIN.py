@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import *
+from tkinter import ttk
 import sqlite3
 import webbrowser
 
@@ -21,7 +22,7 @@ USERNAME = StringVar()
 PASSWORD = StringVar()
 
 def ShowPolicy():
-    webbrowser.open_new(r"file://C:\Temp\policydoc.docx")
+    webbrowser.open_new(r"https://github.com/AdminTeamUSW2019/Admin---GUI/blob/master/PolicyV1.md")
 
 def Database():
     global conn, cursor
@@ -37,9 +38,10 @@ def Database():
 def ShowLoginForm():
     global loginform
     loginform = Toplevel()
-    loginform.title("Simple Inventory System/Account Login")
-    width = 600
-    height = 500
+    loginform.title("Account Login")
+    loginform.configure(bg='grey')
+    width = 2000
+    height = 1000
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
     x = (screen_width / 2) - (width / 2)
@@ -66,7 +68,7 @@ def LoginForm():
     username.grid(row=0, column=1)
     password = Entry(MidLoginForm, textvariable=PASSWORD, font=('arial', 25), width=15, show="*")
     password.grid(row=1, column=1)
-    btn_login = Button(MidLoginForm, text="Login", font=('arial', 18), width=30, command=Login)
+    btn_login = Button(MidLoginForm, text="Login", font=('arial', 18), width=10, command=Login)
     btn_login.grid(row=2, columnspan=2, pady=20)
     btn_login.bind('<Return>', Login)
 
@@ -92,13 +94,100 @@ def Login(event=None):
     cursor.close()
     conn.close()
 
+##Nick's Part
+
+def ShowQueryForm():
+    global queryform
+    queryform = Toplevel()
+    queryform.title("Query Submission")
+    width = 2000
+    height = 1000
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    x = (screen_width / 2) - (width / 2)
+    y = (screen_height / 2) - (height / 2)
+    queryform.resizable(0, 0)
+    queryform.geometry("%dx%d+%d+%d" % (width, height, x, y))
+    QueryForm()
+
+def QueryForm():
+    global lbl_result
+    TopQForm = Frame(queryform, width=600, height=100, bd=1, relief=SOLID)
+    TopQForm.pack(side=TOP, pady=20)
+    lbl_text = Label(TopQForm, text="Query Submission", font=('arial', 18), width=600)
+    lbl_text.pack(fill=X)
+    MidQForm = Frame(queryform, width=600)
+    MidQForm.pack(side=TOP, pady=50)
+    lbl_username = Label(MidQForm, text="Type of Problem:", font=('arial', 25), bd=18)
+    lbl_username.grid(row=0)
+    lbl_password = Label(MidQForm, text="Password:", font=('arial', 25), bd=18)
+    lbl_password.grid(row=1)
+    lbl_result = Label(MidQForm, text="", font=('arial', 18))
+    lbl_result.grid(row=3, columnspan=2)
+    problembox = ttk.Combobox(MidQForm, values=["Issue with Software", "Hardware Issue", "Request Technical Support", "Other"], font=('arial', 25), width=25)
+    problembox.grid(row=0, column=1)
+    problembox.current(1)
+    password = Entry(MidQForm, textvariable=PASSWORD, font=('arial', 25), width=15)
+    password.grid(row=1, column=1)
+    btn_login = Button(MidQForm, text="Login", font=('arial', 18), width=30, command=Login)
+    btn_login.grid(row=2, columnspan=2, pady=20)
+    btn_login.bind('<Return>', Login)
+
+##Nick's Part
+
+def ShowAdminForm():
+    global adminform
+    adminform = Toplevel()
+    adminform.title("Query Submission")
+    width = 2000
+    height = 1000
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    x = (screen_width / 2) - (width / 2)
+    y = (screen_height / 2) - (height / 2)
+    adminform.resizable(0, 0)
+    adminform.geometry("%dx%d+%d+%d" % (width, height, x, y))
+    AdminForm()
+
+def AdminForm():
+    global lbl_result
+    TopAForm = Frame(adminform, width=600, height=100, bd=0, relief=SOLID)
+    TopAForm.pack(side=TOP)
+    lbl_text = Label(TopAForm, text="Admin", font=('arial', 18), width=600, bg='grey', fg='white')
+    lbl_text.pack(fill=X)
+
+    SideAForm = Frame(adminform, width=150, height=1000, bd=0, relief=SOLID, bg='grey')
+    SideAForm.pack(side=LEFT)
+    btn_dash = Button(SideAForm, text="Dashboard", font=('arial', 18), command=Login)
+    ##btn_dash.pack(fill=Y)
+    btn_dash.grid(row=1000, column=0)
+    SideAForm.grid_rowconfigure(0, weight=1)
+    SideAForm.grid_columnconfigure(0, weight=1)
+
+    MidQForm = Frame(adminform, width=600)
+    MidQForm.pack(side=TOP, pady=50)
+    lbl_username = Label(MidQForm, text="Type of Problem:", font=('arial', 25), bd=18)
+    lbl_username.grid(row=0)
+    lbl_password = Label(MidQForm, text="Password:", font=('arial', 25), bd=18)
+    lbl_password.grid(row=1)
+    lbl_result = Label(MidQForm, text="", font=('arial', 18))
+    lbl_result.grid(row=3, columnspan=2)
+    problembox = ttk.Combobox(MidQForm, values=["Issue with Software", "Hardware Issue", "Request Technical Support", "Other"], font=('arial', 25), width=25)
+    problembox.grid(row=0, column=1)
+    problembox.current(1)
+    password = Entry(MidQForm, textvariable=PASSWORD, font=('arial', 25), width=15)
+    password.grid(row=1, column=1)
+    btn_login = Button(MidQForm, text="Login", font=('arial', 18), width=30, command=Login)
+    btn_login.grid(row=2, columnspan=2, pady=20)
+    btn_login.bind('<Return>', Login)
+
 def ShowHome():
     root.show()
     loginform.destroy()
 
 nextmenu.add_command(label='Log In', command=ShowLoginForm)
-nextmenu.add_command(label='NEXT')
-nextmenu.add_command(label='Next...')
+nextmenu.add_command(label='Query', command=ShowQueryForm)
+nextmenu.add_command(label='Admin', command=ShowAdminForm)
 nextmenu.add_command(label='Policy', command=ShowPolicy)
 nextmenu.add_separator()
 nextmenu.add_command(label='Exit', command=root.quit)
