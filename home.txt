@@ -1,0 +1,15 @@
+writing complains to a list which will later be used to write a cvs file
+
+
+make empty list
+
+while filenotlastline
+
+with open(filename, r) as file:
+for line in file
+customerComplaint +=  line + " "
+
+
+if string = **********
+list[indexnum].append(customerComplaint)
+customerComplaint = ""
