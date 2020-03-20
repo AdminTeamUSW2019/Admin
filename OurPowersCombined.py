@@ -44,9 +44,7 @@ def updateLog():
     now = datetime.now()
     now = now.strftime("%m/%d/%Y, %H:%M:%S")
     with open("Userlog.txt", "a") as txtUserlog:
-            txtUserlog.write("User: " + USERNAME.get() + "\n")
-            txtUserlog.write(now)
-            txtUserlog.write("**********")
+            txtUserlog.write("User: " + USERNAME.get() + " Logged in at: " + now)
             txtUserlog.write("\n")
             txtUserlog.close()
 
@@ -81,7 +79,7 @@ def ShowLoginForm():
     LoginForm()
 
 def LoginForm():
-    global lbl_result
+    global lbl_result, username, password
     TopLoginForm = Frame(loginform, width=600, height=100, relief=SOLID)
     TopLoginForm.pack(side=TOP, pady=1)
     lbl_text = Label(TopLoginForm, text="System Support Login", font=('arial', 18), width=600)
@@ -125,19 +123,13 @@ def Login(event=None):
                 updateLog()
                 cursor2.execute("SELECT * FROM `users` WHERE `username` = ? AND `password` = ? AND Accesslevel <> 1", (USERNAME.get(), PASSWORD.get()))
                 if cursor2.fetchone() is not None:
-                    data = cursor2.fetchmany()
-                    for rows in data:
-                        username = rows[0]
-                        FNAME.set(rows[3])
-                        lname = rows[4]
-                    USERNAME.set("")
-                    PASSWORD.set("")
+                    username.delete(0, END)
+                    password.delete(0, END)
                     lbl_result.config(text="")
                     ShowAdminForm()
                 else:
-                    data = cursor.fetchone()
-                    USERNAME.set("")
-                    PASSWORD.set("")
+                    username.delete(0, END)
+                    password.delete(0, END)
                     lbl_result.config(text="")
                     new_query_menu()
         else:
@@ -159,20 +151,14 @@ def PINCheck():
             updateLog()
             cursor2.execute("SELECT * FROM `users` WHERE `username` = ? AND `password` = ? AND Accesslevel <> 1", (USERNAME.get(), PASSWORD.get()))
             if cursor2.fetchone() is not None:
-                data = cursor2.fetchmany()
-                for rows in data:
-                    username = rows[0]
-                    FNAME.set(rows[3])
-                    lname = rows[4]
-                USERNAME.set("")
-                PASSWORD.set("")
+                username.delete(0, END)
+                password.delete(0, END)
                 PIN.set("")
                 lbl_result.config(text="")
                 ShowAdminForm()
             else:
-                data = cursor.fetchone()
-                USERNAME.set("")
-                PASSWORD.set("")
+                username.delete(0, END)
+                password.delete(0, END)
                 PIN.set("")
                 lbl_result.config(text="")
                 new_query_menu()
@@ -367,8 +353,6 @@ def ShowAdminForm():
     NewAdminForm()
 
 def NewAdminForm():
-    global mylist
-    lbl_message = 'Welcome ' + FNAME.get()
     TopAForm = Frame(adminform, width=600, height=100, bd=0, relief=SOLID)
     TopAForm.pack(side=TOP)
     lbl_text = Label(TopAForm, text="Admin", font=('arial', 18), width=600, bg='grey', fg='white')
@@ -379,7 +363,7 @@ def NewAdminForm():
     notebook = ttk.Notebook(adminform, style='lefttab.TNotebook')
     
     f1 = tk.Frame(notebook, bg='white', width=1000, height=500)
-    lbl_dash = Label(f1, text=lbl_message, font=('arial', 25), bg='white')
+    lbl_dash = Label(f1, text=("Welcome " + USERNAME.get()), font=('arial', 25), bg='white')
     lbl_dash.pack(fill=X)
     
     f2 = tk.Frame(notebook, bg='white', width=1000, height=500)
@@ -388,9 +372,7 @@ def NewAdminForm():
     mylist = Listbox(f2, yscrollcommand = sb.set)
     listQuery = ""
     with open("userQueries.txt", "r") as txtUserQuery:
-        # queries = txtUserQuery.readlines()
         for returnedLine in txtUserQuery:
-            ##print(returnedLine)
             mylist.insert(END, returnedLine)
             if returnedLine == "**********\n":
                 listQuery += returnedLine
@@ -399,15 +381,33 @@ def NewAdminForm():
             else:
                 listQuery += returnedLine
         txtUserQuery.close()
-    ##for line in range(30):  
-    ##    mylist.insert(END, "Number " + str(line))  
     mylist.pack( fill=BOTH )  
     sb.config( command = mylist.yview )  
 
-    f3 = tk.Frame(notebook, bg='green', width=1000, height=500)
+    f3 = tk.Frame(notebook, bg='white', width=1000, height=500)
+    sb2 = Scrollbar(f3)
+    sb2.pack(side = RIGHT, fill=Y)
+    mylist2 = Listbox(f3, yscrollcommand = sb2.set)
+    listQuery = ""
+    with open("Userlog.txt", "r") as txtUserLog:
+        for returnedLine in txtUserLog:
+            mylist2.insert(END, returnedLine)
+            if returnedLine == "**********\n":
+                listQuery += returnedLine
+                queries.append(listQuery)
+                listQuery = ""
+            else:
+                listQuery += returnedLine
+        txtUserLog.close()
+    mylist2.pack( fill=BOTH )  
+    sb2.config( command = mylist2.yview ) 
+
+    f4 = tk.Frame(notebook, bg='green', width=1000, height=500)
+
     notebook.add(f1, text=f'{"Dashboard": ^20s}')
     notebook.add(f2, text=f'{"Queries": ^24s}')
     notebook.add(f3, text=f'{"User Log": ^23s}')
+    notebook.add(f4, text=f'{"Extra": ^27s}')
     notebook.pack(side=TOP)
 
 ##Old

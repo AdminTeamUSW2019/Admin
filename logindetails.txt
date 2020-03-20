@@ -1,0 +1,2 @@
+Username = UserOne, Password = password, Admin user
+Username = UserTwo, Password = passwordTwo, Regular user
