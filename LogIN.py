@@ -3,6 +3,7 @@ from tkinter import *
 from tkinter import ttk
 import sqlite3
 import webbrowser
+import urllib.request
 
 from datetime import datetime
 
@@ -22,6 +23,7 @@ pw.pack(fill = BOTH, expand = True)
 
 USERNAME = StringVar()
 PASSWORD = StringVar()
+PIN = StringVar()
 FNAME = StringVar()
 
 def ShowPolicy():
@@ -89,34 +91,105 @@ def Login(event=None):
     conn = sqlite3.connect("GUITest.db")
     cursor = conn.cursor()
     cursor2 = conn.cursor()
+    external_ip = urllib.request.urlopen('https://ident.me').read().decode('utf8')
     if USERNAME.get == "" or PASSWORD.get() == "":
         lbl_result.config(text="Please complete the required field!", fg="red")
     else:
         cursor.execute("SELECT * FROM `users` WHERE `username` = ? AND `password` = ?", (USERNAME.get(), PASSWORD.get()))
         if cursor.fetchone() is not None:
+            cursor.execute("SELECT * FROM `registeredIP` WHERE `username` = ? AND `IPaddress` = ?", (USERNAME.get(), external_ip))
+            if cursor.fetchone() is None:
+                ShowPINInput()
+            else:
+                cursor2.execute("SELECT * FROM `users` WHERE `username` = ? AND `password` = ? AND 'accesslevel' > 0", (USERNAME.get(), PASSWORD.get()))
+                if cursor2.fetchmany() is not None:
+                    data = cursor2.fetchmany()
+                    for rows in data:
+                        username = rows[0]
+                        FNAME.set(rows[3])
+                        lname = rows[4]
+                    USERNAME.set("")
+                    PASSWORD.set("")
+                    lbl_result.config(text="")
+                    ShowAdminForm()
+                else:
+                    data = cursor.fetchone()
+                    USERNAME.set("")
+                    PASSWORD.set("")
+                    lbl_result.config(text="")
+                    ShowPolicy()
+        else:
+            lbl_result.config(text="Invalid username or password", fg="red")
+    ##cursor.close()
+    ##conn.close()
+
+def PINCheck():
+    global conn, cursor
+    conn = sqlite3.connect("GUITest.db")
+    cursor = conn.cursor()
+    external_ip = urllib.request.urlopen('https://ident.me').read().decode('utf8')
+    if PIN.get == "":
+        lbl_result.config(text="Please complete the required field!", fg="red")
+    else:
+        cursor.execute("SELECT * FROM `users` WHERE `username` = ? AND `pin` = ?", (USERNAME.get(), PIN.get()))
+        if cursor.fetchone() is not None:
+            cursor.execute("INSERT INTO `registeredIP` VALUES (?, ?)", (USERNAME.get(), external_ip))
             cursor2.execute("SELECT * FROM `users` WHERE `username` = ? AND `password` = ? AND 'accesslevel' > 0", (USERNAME.get(), PASSWORD.get()))
             if cursor2.fetchmany() is not None:
                 data = cursor2.fetchmany()
                 for rows in data:
-                    username = data[0]
-                    FNAME.set(data[3])
-                    lname = data[4]
+                    username = rows[0]
+                    FNAME.set(rows[3])
+                    lname = rows[4]
                 USERNAME.set("")
                 PASSWORD.set("")
+                PIN.set("")
                 lbl_result.config(text="")
                 ShowAdminForm()
             else:
                 data = cursor.fetchone()
                 USERNAME.set("")
                 PASSWORD.set("")
+                PIN.set("")
                 lbl_result.config(text="")
                 ShowPolicy()
         else:
-            lbl_result.config(text="Invalid username or password", fg="red")
-            USERNAME.set("")
-            PASSWORD.set("")
-    cursor.close()
+            lbl_result.config(text="Invalid PIN", fg="red")
+    conn.commit()
     conn.close()
+
+def ShowPINInput():
+    global PINform
+    PINform = Toplevel()
+    PINform.title("Please input 4 digit PIN")
+    width = 500
+    height = 500
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    x = (screen_width / 2) - (width / 2)
+    y = (screen_height / 2) - (height / 2)
+    PINform.resizable(0, 0)
+    PINform.geometry("%dx%d+%d+%d" % (width, height, x, y))
+    InputPINform()
+
+def InputPINform():
+    global lbl_result
+    TopPForm = Frame(PINform, width=500, height=50, bd=1, relief=SOLID)
+    TopPForm.pack(side=TOP, pady=20)
+    lbl_text = Label(TopPForm, text="Please input 4 digit PIN", font=('arial', 18), width=600)
+    lbl_text.pack(fill=X)
+    MidPForm = Frame(PINform, width=300)
+    MidPForm.pack(side=TOP, pady=50)
+    lbl_pin = Label(MidPForm, text="PIN:", font=('arial', 25), bd=18)
+    lbl_pin.grid(row=0)
+    lbl_result = Label(MidPForm, text="", font=('arial', 18))
+    lbl_result.grid(row=2, columnspan=2)
+    pin = Entry(MidPForm, textvariable=PIN, font=('arial', 25), width=15)
+    pin.grid(row=0, column=1)
+    btn_pin = Button(MidPForm, text="Confirm", font=('arial', 18), width=30, command=PINCheck)
+    btn_pin.grid(row=1, columnspan=2, pady=20)
+    btn_pin.bind('<Return>', PINCheck)
+
 
 ##Nick's Part
 
@@ -244,14 +317,18 @@ def DatabaseTest():
     username VARCHAR(30) PRIMARY KEY, 
     password VARCHAR(30),
     accesslevel INT, 
+    pin VARCHAR(4),
     fname VARCHAR(20),  
     lname VARCHAR(30));"""
 
     crsr.execute(sql_command)
 
-    sql_command = """INSERT INTO users VALUES ("UserOne", "password", 1, "Bob", "Jones");"""
+    sql_command = """CREATE TABLE registeredIP (username VARCHAR(30), IPaddress VARCHAR(20));"""
     crsr.execute(sql_command)
-    sql_command = """INSERT INTO users VALUES ("UserTwo", "passwordTwo", 0, "Bill", "Gates");"""
+
+    sql_command = """INSERT INTO users VALUES ("UserOne", "password", 1, 1234, "Bob", "Jones");"""
+    crsr.execute(sql_command)
+    sql_command = """INSERT INTO users VALUES ("UserTwo", "passwordTwo", 0, 0987, "Bill", "Gates");"""
     crsr.execute(sql_command)
     conn.commit()
     conn.close()
