@@ -1,2 +1,2 @@
-Username = UserOne, Password = password, Admin user
-Username = UserTwo, Password = passwordTwo, Regular user
+Username = UserOne, Password = password, PIN = 1234, Admin user
+Username = UserTwo, Password = passwordTwo, PIN = 987, Regular user
